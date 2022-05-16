@@ -26,8 +26,9 @@ struct line
 
 };
 
-vector<block> read_mem(ifstream& file_name, vector<block>Memory)
+vector<block> read_mem(ifstream& file_name, vector<block>Memory, int offset, int index, int tag)
 {
+	block B;
 	if (!file_name.is_open())
 		cout << "Can't open file" << endl;
 	else
@@ -36,7 +37,10 @@ vector<block> read_mem(ifstream& file_name, vector<block>Memory)
 		cout << "successfully opened file" << endl;
 		while (getline(file_name, address))
 		{
-
+			B.tag = address.substr(0, tag);
+			B.line_idx = address.substr(tag - 1, index);
+			B.offset = address.substr(tag + index - 1, offset);
+			Memory.push_back(B);
 		}
 	}
 
@@ -50,14 +54,18 @@ int main()
 	vector<block>Memory;
 	vector<line> Cache;
 	int S, L, CC;
-	cout << "Please enter the following data";
+	cout << "Please enter the following data" << endl;
 	cout << "Total cache size ";
 	cin >> S;
 	cout << "The cache line size ";
 	cin >> L;
-	cout << "The cache line size ";
+	cout << "The number of cycles needed to access the cache ";
 	cin >> CC;
-	Cache.resize(S);
-	Memory = read_mem(file_name, Memory);
+	int C = S / L;
+	Cache.resize(C);
+	int offset = log2(L);
+	int index = log2(C);
+	int tag = 32 - index - offset;
+	Memory = read_mem(file_name, Memory, offset, index, tag);
 	return 0;
 }

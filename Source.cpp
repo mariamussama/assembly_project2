@@ -83,13 +83,14 @@ void direct_mapping(vector<block>Memory, vector<line>& Cache, double CC)
 			}
 		}
 		double miss_rate = (miss / (miss + hit));
+		double hit_rate = (hit / (miss + hit));
 		double miss_penalty = 100;
 		double AMAT = CC + miss_rate * 100;
 
 		cout << "Total Hits: " << hit << endl << "Total Misses: " << miss << endl;
 		cout << "Hit Time: " << CC << endl;
-
 		cout << "Miss Rate: " << miss_rate << endl;
+		cout << "Hit Rate: " << hit_rate << endl;
 		cout << "Miss Penalty: " << miss_penalty << endl;
 		cout << "AMAT Value: " << AMAT << endl << endl;
 		cout << "(VB)\t(Tag)\t\t\t\t(Data)" << endl;

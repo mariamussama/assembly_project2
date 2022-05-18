@@ -57,8 +57,6 @@ void direct_mapping(vector<block>Memory, vector<line>& Cache, int CC)
 {
 	int hit = 0, miss = 0;
 	int AMAT;
-	int hit_time = 1;
-	int miss_penalty = 20;
 	for (int i = 0; i < 10; i++)
 	{
 		int idx = rand() % Memory.size();
@@ -86,8 +84,8 @@ void direct_mapping(vector<block>Memory, vector<line>& Cache, int CC)
 			}
 		}
 		cout << "hit: " << hit << " miss: " << miss << endl;
-		AMAT = hit_time + (miss / (miss + hit)) * miss_penalty;
-		cout << "AMAT: " << AMAT;
+		AMAT = CC + (miss / (miss + hit)) * 10*CC;
+		cout << "AMAT: " << AMAT << " cycles" << endl; 
 		for (int j = 0; j < Cache.size(); j++)
 		{
 			line c = Cache[j];

@@ -54,10 +54,9 @@ vector<block> read_mem(ifstream& file_name, vector<block>& Memory, int offset, i
 
 	return Memory;
 }
-void direct_mapping(vector<block>Memory, vector<line>& Cache, int CC)
+void direct_mapping(vector<block>Memory, vector<line>& Cache, double CC)
 {
-	int hit = 0, miss = 0;
-	int AMAT = 0;
+	double hit = 0, miss = 0;
 	for (int i = 0; i < 10; i++)
 	{
 		int idx = rand() % Memory.size();
@@ -83,11 +82,15 @@ void direct_mapping(vector<block>Memory, vector<line>& Cache, int CC)
 				Cache[temp.index].tag = temp.tag;
 			}
 		}
+		double miss_rate = (miss / (miss + hit));
+		double miss_penalty = 100;
+		double AMAT = CC + miss_rate * 100;
+
 		cout << "Total Hits: " << hit << endl << "Total Misses: " << miss << endl;
 		cout << "Hit Time: " << CC << endl;
-		cout << "Miss Rate: " << (miss / (miss + hit)) << endl;
-		cout << "Miss Penalty: " << 100 << endl;
-		AMAT = CC + (miss / (miss + hit)) * 100;
+
+		cout << "Miss Rate: " << miss_rate << endl;
+		cout << "Miss Penalty: " << miss_penalty << endl;
 		cout << "AMAT Value: " << AMAT << endl << endl;
 		cout << "(VB)\t(Tag)\t\t\t\t(Data)" << endl;
 		for (int j = 0; j < Cache.size(); j++)
@@ -105,7 +108,8 @@ int main()
 	ifstream file_name("memory.txt");
 	vector<block>Memory;
 	vector<line> Cache;
-	int S, L, CC;
+	int S, L;
+	double CC;
 	cout << "The American University in Cairo" << endl << "Assembly Language - Memory Hierarchy Simulator" << endl << "Mariam Abdelaziz 900196082" << endl << "Salma Abdelhalim 900193718" << endl << "Abdelhalim Ali 900193539" << endl;
 	cout << "-----------------------------------------------------------------------------------------------------------------------" << endl;
 	cout << "Please enter the following data for the program to operate:- " << endl;

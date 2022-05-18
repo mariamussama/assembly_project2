@@ -32,11 +32,12 @@ vector<block> read_mem(ifstream& file_name, vector<block>& Memory, int offset, i
 {
 	block B;
 	if (!file_name.is_open())
-		cout << "Can't open file" << endl;
+		cout << "Can't open file!!" << endl;
 	else
 	{
 		string address;
-		cout << "successfully opened file" << endl;
+		cout << "File opend successfully!!" << endl;
+		cout << "-----------------------------------------------------------------------------------------------------------------------" << endl;
 		while (getline(file_name, address))
 		{
 			B.data = address;
@@ -56,13 +57,12 @@ vector<block> read_mem(ifstream& file_name, vector<block>& Memory, int offset, i
 void direct_mapping(vector<block>Memory, vector<line>& Cache, int CC)
 {
 	int hit = 0, miss = 0;
-	int AMAT;
+	int AMAT = 0;
 	for (int i = 0; i < 10; i++)
 	{
 		int idx = rand() % Memory.size();
 		block temp = Memory[idx];
-		cout << endl;
-		cout << "processor: " << temp.tag << " " << temp.index << " " << temp.data << endl;
+		cout << "Processor: " << temp.tag << " " << temp.index << " " << temp.data << endl;
 		if (Cache[temp.index].valid_bit == "0")
 		{
 			miss++;
@@ -83,14 +83,19 @@ void direct_mapping(vector<block>Memory, vector<line>& Cache, int CC)
 				Cache[temp.index].tag = temp.tag;
 			}
 		}
-		cout << "hit: " << hit << " miss: " << miss << endl;
+		cout << "Total Hits: " << hit << endl << "Total Misses: " << miss << endl;
+		cout << "Hit Time: " << CC << endl;
+		cout << "Miss Rate: " << (miss / (miss + hit)) << endl;
+		cout << "Miss Penalty: " << 100 << endl;
 		AMAT = CC + (miss / (miss + hit)) * 100;
-		cout << "AMAT: " << AMAT << " cycles" << endl; 
+		cout << "AMAT Value: " << AMAT << endl << endl;
+		cout << "(VB)\t(Tag)\t\t\t\t(Data)" << endl;
 		for (int j = 0; j < Cache.size(); j++)
 		{
 			line c = Cache[j];
 			cout << c.valid_bit << "\t" << c.tag << "\t" << c.data << endl;
 		}
+		cout << "-----------------------------------------------------------------------------------------------------------------------" << endl;
 	}
 
 }
@@ -101,14 +106,18 @@ int main()
 	vector<block>Memory;
 	vector<line> Cache;
 	int S, L, CC;
-	cout << "Please enter the following data" << endl;
-	cout << "Total cache size ";
+	cout << "The American University in Cairo" << endl << "Assembly Language - Memory Hierarchy Simulator" << endl << "Mariam Abdelaziz 900196082" << endl << "Salma Abdelhalim 900193718" << endl << "Abdelhalim Ali 900193539" << endl;
+	cout << "-----------------------------------------------------------------------------------------------------------------------" << endl;
+	cout << "Please enter the following data for the program to operate:- " << endl;
+	cout << "Total Cache Size (S): ";
 	cin >> S;
-	cout << "The cache line size ";
+	cout << "Cache Line Size (L): ";
 	cin >> L;
-	cout << "The number of cycles needed to access the cache ";
+	cout << "Cycles / Cache (CC): ";
 	cin >> CC;
 	int C = S / L;//number of lines
+	cout << "TOtal Cache Lines (C): " << C << endl;
+	cout << "-----------------------------------------------------------------------------------------------------------------------" << endl;
 	Cache.resize(C);
 	int offset = log2(L);//disp
 	int index = log2(C);//index

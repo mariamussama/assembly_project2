@@ -13,20 +13,22 @@ using namespace std;
 
 struct block
 {
-	string tag;
-	string offset;
-	string line_idx;
+	string tag="";
+	string offset="";
+	string line_idx="";
+	string data="";
+	int index;
 };
 
 struct line
 {
-	string valid_bit;
-	string tag;
-	string data;
+	string valid_bit = "0";
+	string tag="";
+	string data = "";
 
 };
 
-vector<block> read_mem(ifstream& file_name, vector<block>Memory, int offset, int index, int tag)
+vector<block> read_mem(ifstream& file_name, vector<block>& Memory, int offset, int index, int tag)
 {
 	block B;
 	if (!file_name.is_open())
@@ -37,16 +39,58 @@ vector<block> read_mem(ifstream& file_name, vector<block>Memory, int offset, int
 		cout << "successfully opened file" << endl;
 		while (getline(file_name, address))
 		{
+			B.data = address;
 			B.tag = address.substr(0, tag);
 			B.line_idx = address.substr(tag - 1, index);
 			B.offset = address.substr(tag + index - 1, offset);
+			string temp = B.line_idx;
+			bitset<32> b(temp);
+			B.index = b.to_ulong();
+			//cout << B.line_idx << " " << B.index << endl;
 			Memory.push_back(B);
 		}
 	}
 
 	return Memory;
 }
+void direct_mapping(vector<block>Memory, vector<line>& Cache)
+{
+	int hit = 0, miss = 0;
+	for (int i = 0; i < 10; i++)
+	{
+		int idx = rand() % Memory.size();
+		block temp = Memory[idx];
+		cout << endl;
+		cout << "processor: " << temp.tag <<" "<<temp.index<<" "<<temp.data<< endl;
+		if (Cache[temp.index].valid_bit == "0")
+		{
+			miss++;
+			Cache[temp.index].data = temp.data;
+			Cache[temp.index].tag = temp.tag;
+			Cache[temp.index].valid_bit = "1";
+		}
+		else
+		{
+			if (Cache[temp.index].tag == temp.tag)
+			{
+				hit++;
+			}
+			else
+			{
+				miss++;
+				Cache[temp.index].data = temp.data;
+				Cache[temp.index].tag = temp.tag;
+			}
+		}
+		cout << "hit: " << hit << " miss: " << miss << endl;
+		for (int j = 0; j < Cache.size(); j++)
+		{
+			line c = Cache[j];
+			cout << c.valid_bit << "\t" << c.tag << "\t" << c.data << endl;
+		}
+	}
 
+}
 
 int main()
 {
@@ -61,11 +105,13 @@ int main()
 	cin >> L;
 	cout << "The number of cycles needed to access the cache ";
 	cin >> CC;
-	int C = S / L;
+	int C = S / L;//number of lines
 	Cache.resize(C);
-	int offset = log2(L);
-	int index = log2(C);
-	int tag = 32 - index - offset;
+	int offset = log2(L);//disp
+	int index = log2(C);//index
+	int tag = 32 - index - offset;//tag
+	//cout << tag;
 	Memory = read_mem(file_name, Memory, offset, index, tag);
+	direct_mapping(Memory, Cache);
 	return 0;
 }

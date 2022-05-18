@@ -86,7 +86,7 @@ void direct_mapping(vector<block>Memory, vector<line>& Cache, int CC)
 			}
 		}
 		cout << "hit: " << hit << " miss: " << miss << endl;
-		AMAT = hit_time + (miss / CC) * miss_penalty;
+		AMAT = hit_time + (miss / (miss + hit)) * miss_penalty;
 		cout << "AMAT: " << AMAT;
 		for (int j = 0; j < Cache.size(); j++)
 		{

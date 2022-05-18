@@ -13,17 +13,17 @@ using namespace std;
 
 struct block
 {
-	string tag="";
-	string offset="";
-	string line_idx="";
-	string data="";
+	string tag = "";
+	string offset = "";
+	string line_idx = "";
+	string data = "";
 	int index;
 };
 
 struct line
 {
 	string valid_bit = "0";
-	string tag="";
+	string tag = "";
 	string data = "";
 
 };
@@ -53,15 +53,18 @@ vector<block> read_mem(ifstream& file_name, vector<block>& Memory, int offset, i
 
 	return Memory;
 }
-void direct_mapping(vector<block>Memory, vector<line>& Cache)
+void direct_mapping(vector<block>Memory, vector<line>& Cache, int CC)
 {
 	int hit = 0, miss = 0;
+	int AMAT;
+	int hit_time = 1;
+	int miss_penalty = 20;
 	for (int i = 0; i < 10; i++)
 	{
 		int idx = rand() % Memory.size();
 		block temp = Memory[idx];
 		cout << endl;
-		cout << "processor: " << temp.tag <<" "<<temp.index<<" "<<temp.data<< endl;
+		cout << "processor: " << temp.tag << " " << temp.index << " " << temp.data << endl;
 		if (Cache[temp.index].valid_bit == "0")
 		{
 			miss++;
@@ -83,6 +86,8 @@ void direct_mapping(vector<block>Memory, vector<line>& Cache)
 			}
 		}
 		cout << "hit: " << hit << " miss: " << miss << endl;
+		AMAT = hit_time + (miss / CC) * miss_penalty;
+		cout << "AMAT: " << AMAT;
 		for (int j = 0; j < Cache.size(); j++)
 		{
 			line c = Cache[j];
@@ -112,6 +117,6 @@ int main()
 	int tag = 32 - index - offset;//tag
 	//cout << tag;
 	Memory = read_mem(file_name, Memory, offset, index, tag);
-	direct_mapping(Memory, Cache);
+	direct_mapping(Memory, Cache, CC);
 	return 0;
 }

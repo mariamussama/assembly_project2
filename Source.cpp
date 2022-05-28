@@ -72,9 +72,9 @@ vector<block> read_mem(ifstream& file_name, vector<block>& Memory, int offset, i
 
 
 
-void direct_mapping(block temp, vector<block>Memory, vector<line>& Cache, double CC)
+void direct_mapping(block temp, vector<block>Memory, vector<line>& Cache, double CC, double& hit, double& miss)
 {
-	double hit = 0, miss = 0;
+	
 	
 		if (Cache[temp.index].valid_bit == "0")
 		{
@@ -118,12 +118,9 @@ void direct_mapping(block temp, vector<block>Memory, vector<line>& Cache, double
 
 }
 
-void Set_Full(block temp ,vector<block>Memory, vector<Set>& Setcache, double CC, int numset)
+void Set_Full(block temp ,vector<block>Memory, vector<Set>& Setcache, double CC, int numset, double&hit, double&miss)
 {
 	
-	double hit = 0, miss = 0;
-	
-
 		bool check = false;
 		for (int m = 0; m < Setcache[temp.address].S.size(); m++)
 		{
@@ -191,6 +188,8 @@ int main()
 	vector <Set> Setcache_data;
 	int S, L, M = 1;
 	double CC;
+	double I_hit = 0, I_miss = 0;
+	double D_hit = 0, D_miss = 0;
 	int choice, offset, index, tag;
 	cout << "The American University in Cairo" << endl << "Assembly Language - Memory Hierarchy Simulator" << endl << "Mariam Abdelaziz 900196082" << endl << "Salma Abdelhalim 900193718" << endl << "Abdelhalim Ali 900193539" << endl;
 	cout << "-----------------------------------------------------------------------------------------------------------------------" << endl;
@@ -233,7 +232,7 @@ int main()
 
 	if (choice == 3)
 	{
-		M = C;
+		M = 1;
 		offset = log2(L);//disp
 		index = 0;//index
 		tag = 32 - offset;//tag
@@ -259,12 +258,12 @@ int main()
 			if (temp.check == "0")
 			{
 				cout << "Instruction Cache accessed" << endl;
-				direct_mapping(temp, Memory, Cache_inst, CC);
+				direct_mapping(temp, Memory, Cache_inst, CC, I_hit, I_miss);
 			}
 			else
 			{
 				cout << "Data Cache accessed" << endl;
-				direct_mapping(temp, Memory, Cache_data, CC);
+				direct_mapping(temp, Memory, Cache_data, CC, D_hit, D_miss);
 				
 			}
 		}
@@ -279,13 +278,13 @@ int main()
 			if (temp.check == "0")
 			{
 				cout << "Instruction Cache accessed" << endl;
-				Set_Full(temp, Memory, Setcache_inst, CC, M);
+				Set_Full(temp, Memory, Setcache_inst, CC, M, I_hit, I_miss);
 				
 			}
 			else
 			{
 				cout << "Data Cache accessed" << endl;
-				Set_Full(temp, Memory, Setcache_data, CC, M);
+				Set_Full(temp, Memory, Setcache_data, CC, M, D_hit, D_miss);
 			}
 		}
 	}

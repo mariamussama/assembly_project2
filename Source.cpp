@@ -28,7 +28,13 @@ struct line
 
 };
 
-vector<block> read_mem(ifstream& file_name, vector<block>& Memory, int offset, int index, int tag)
+struct Set
+{
+	int size;
+	vector<line> S;
+};
+
+vector<block> read_mem(ifstream& file_name, vector<block>& Memory, int offset, int index, int tag, int numset, int choice)
 {
 	block B;
 	if (!file_name.is_open())
@@ -54,6 +60,9 @@ vector<block> read_mem(ifstream& file_name, vector<block>& Memory, int offset, i
 
 	return Memory;
 }
+
+
+
 void direct_mapping(vector<block>Memory, vector<line>& Cache, double CC)
 {
 	double hit = 0, miss = 0;
@@ -104,31 +113,128 @@ void direct_mapping(vector<block>Memory, vector<line>& Cache, double CC)
 
 }
 
+void Set_Full(vector<block>Memory, vector<Set>& Setcache, double CC, int numset)
+{
+	//vector<line> Cache;
+	double hit = 0, miss = 0;
+	for (int i = 0; i < 10; i++)
+	{
+		int idx = rand() % Memory.size();
+		block temp = Memory[idx];
+		cout << "Processor: " << temp.tag << " " << temp.index << " " << temp.data << endl;
+
+		string addr = temp.data;
+		bitset<32> b(addr);
+		int idx = b.to_ulong();
+
+		int set = idx % numset;
+		
+		if (Setcache.at(set).S[temp.index].valid_bit == "0")
+		{
+			miss++;
+			Setcache.at(set).S[temp.index].data = temp.data;
+			Setcache.at(set).S[temp.index].tag = temp.tag;
+			Setcache.at(set).S[temp.index].valid_bit = "1";
+		}
+		else
+		{
+			if (Setcache.at(set).S[temp.index].tag == temp.tag)
+			{
+				hit++;
+			}
+			else
+			{
+				miss++;
+				Setcache.at(set).S[temp.index].data = temp.data;
+				Setcache.at(set).S[temp.index].tag = temp.tag;
+			}
+		}
+		double miss_rate = (miss / (miss + hit));
+		double hit_rate = (hit / (miss + hit));
+		double miss_penalty = 100;
+		double AMAT = CC + miss_rate * 100;
+
+		cout << "Total Hits: " << hit << endl << "Total Misses: " << miss << endl;
+		cout << "Hit Time: " << CC << endl;
+		cout << "Miss Rate: " << miss_rate << endl;
+		cout << "Hit Rate: " << hit_rate << endl;
+		cout << "Miss Penalty: " << miss_penalty << endl;
+		cout << "AMAT Value: " << AMAT << endl << endl;
+		cout << "(VB)\t(Tag)\t\t\t\t(Data)" << endl;
+		/*for (int j = 0; j < Cache.size(); j++)
+		{
+			line c = Cache[j];
+			cout << c.valid_bit << "\t" << c.tag << "\t" << c.data << endl;
+		}*/
+		cout << "-----------------------------------------------------------------------------------------------------------------------" << endl;
+	}
+}
+
+
 int main()
 {
 	ifstream file_name("memory.txt");
 	vector<block>Memory;
 	vector<line> Cache;
-	int S, L;
+	vector <Set> Setcache;
+	int S, L, M;
 	double CC;
+	int choice, offset, index, tag;
 	cout << "The American University in Cairo" << endl << "Assembly Language - Memory Hierarchy Simulator" << endl << "Mariam Abdelaziz 900196082" << endl << "Salma Abdelhalim 900193718" << endl << "Abdelhalim Ali 900193539" << endl;
 	cout << "-----------------------------------------------------------------------------------------------------------------------" << endl;
+	cout << "Choose Cache Organization: " << endl;
+	cout << "1. Direct Mapping" << endl;
+	cout << "2. Set Associative" << endl;
+	cout << "3. Fully Associative" << endl;
+	cout << "Enter your choice  ";
+	cin >> choice;
 	cout << "Please enter the following data for the program to operate:- " << endl;
 	cout << "Total Cache Size (S): ";
 	cin >> S;
 	cout << "Cache Line Size (L): ";
 	cin >> L;
+	if (choice == 2)
+	{
+		cout << "Enter number of sets: ";
+		cin >> M;
+	}
 	cout << "Cycles / Cache (CC): ";
 	cin >> CC;
 	int C = S / L;//number of lines
-	cout << "TOtal Cache Lines (C): " << C << endl;
+	cout << "Total Cache Lines (C): " << C << endl;
 	cout << "-----------------------------------------------------------------------------------------------------------------------" << endl;
-	Cache.resize(C);
-	int offset = log2(L);//disp
-	int index = log2(C);//index
-	int tag = 32 - index - offset;//tag
+	if (choice == 1)
+	{
+		Cache.resize(C);
+		offset = log2(L);//disp
+		index = log2(C);//index
+		tag = 32 - index - offset;//tag
+	}
+
+	if (choice == 2)
+	{
+		offset = log2(L);//disp
+		index = log2(C/M);//index
+		tag = 32 - index - offset;//tag
+	}
+
+	if (choice == 3)
+	{
+		M = C;
+		offset = log2(L);//disp
+		index = 0;//index
+		tag = 32 - offset;//tag
+	}
+
+	Setcache.resize(M);
+	for (int i = 0; i < Setcache.size(); i++)
+		Setcache.at(i).size = C / M;
+
 	//cout << tag;
-	Memory = read_mem(file_name, Memory, offset, index, tag);
-	direct_mapping(Memory, Cache, CC);
+	Memory = read_mem(file_name, Memory, offset, index, tag, M, choice);
+	if (choice == 1)
+		direct_mapping(Memory, Cache, CC);
+	else
+		Set_Full(Memory, Setcache, CC, M);
 	return 0;
 }

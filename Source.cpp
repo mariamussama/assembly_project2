@@ -164,7 +164,7 @@ void Set_Full(block temp ,vector<block>Memory, vector<Set>& Setcache, double CC,
 		cout << "(VB)\t(Tag)\t\t\t\t(Data)" << endl;
 		for (int j = 0; j < Setcache.size(); j++)
 		{
-			if (Setcache[j].size != 1)
+			if (Setcache.size() != 1)
 				cout << "Set" << j << endl;
 			for (int k = 0; k < Setcache[j].S.size(); k++)
 			{

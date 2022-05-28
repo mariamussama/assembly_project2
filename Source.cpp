@@ -18,6 +18,7 @@ struct block
 	string line_idx = "";
 	string data = "";
 	int index;
+	int address;
 };
 
 struct line
@@ -48,12 +49,17 @@ vector<block> read_mem(ifstream& file_name, vector<block>& Memory, int offset, i
 		{
 			B.data = address;
 			B.tag = address.substr(0, tag);
-			B.line_idx = address.substr(tag - 1, index);
-			B.offset = address.substr(tag + index - 1, offset);
+			B.line_idx = address.substr(tag, index);
+			B.offset = address.substr(tag + index , offset);
 			string temp = B.line_idx;
 			bitset<32> b(temp);
 			B.index = b.to_ulong();
-			//cout << B.line_idx << " " << B.index << endl;
+			bitset<32> k(B.data);
+			int addr = k.to_ulong();
+			//cout <<endl<< addr << endl;
+			int set = abs(addr) % numset;
+			B.address = set;
+			//cout << B.data << " " << B.address << endl;
 			Memory.push_back(B);
 		}
 	}
@@ -66,7 +72,7 @@ vector<block> read_mem(ifstream& file_name, vector<block>& Memory, int offset, i
 void direct_mapping(vector<block>Memory, vector<line>& Cache, double CC)
 {
 	double hit = 0, miss = 0;
-	for (int i = 0; i < 10; i++)
+	for (int i = 0; i < 20; i++)
 	{
 		int idx = rand() % Memory.size();
 		block temp = Memory[idx];
@@ -117,38 +123,47 @@ void Set_Full(vector<block>Memory, vector<Set>& Setcache, double CC, int numset)
 {
 	//vector<line> Cache;
 	double hit = 0, miss = 0;
-	for (int i = 0; i < 10; i++)
+	for (int i = 0; i < 20; i++)
 	{
 		int idx = rand() % Memory.size();
 		block temp = Memory[idx];
-		cout << "Processor: " << temp.tag << " " << temp.index << " " << temp.data << endl;
+		cout << "Processor: " << temp.tag << " " << temp.address << " " << temp.data << endl;
 
-		string addr = temp.data;
+		/*string addr = temp.data;
 		bitset<32> b(addr);
-		int idx = b.to_ulong();
+		int address = b.to_ulong();
 
-		int set = idx % numset;
-		
-		if (Setcache.at(set).S[temp.index].valid_bit == "0")
+		int set = address % numset;*/
+		//Set temp2 = Setcache[temp.address];
+		bool check = false;
+		for (int m = 0; m < Setcache[temp.address].S.size(); m++)
+		{
+			if (Setcache[temp.address].S[m].valid_bit == "1")
+			{
+				if (Setcache[temp.address].S[m].tag == temp.tag)
+				{
+					hit++; check = true;
+				}
+			}	
+		}
+		if (!check)
 		{
 			miss++;
-			Setcache.at(set).S[temp.index].data = temp.data;
-			Setcache.at(set).S[temp.index].tag = temp.tag;
-			Setcache.at(set).S[temp.index].valid_bit = "1";
-		}
-		else
-		{
-			if (Setcache.at(set).S[temp.index].tag == temp.tag)
+			line l;
+			l.data = temp.data;
+			l.tag = temp.tag;
+			l.valid_bit = "1";
+			if (Setcache[temp.address].S.size() < Setcache[temp.address].size)
 			{
-				hit++;
+				Setcache[temp.address].S.push_back(l);
 			}
 			else
 			{
-				miss++;
-				Setcache.at(set).S[temp.index].data = temp.data;
-				Setcache.at(set).S[temp.index].tag = temp.tag;
+				int k = rand() % Setcache[temp.address].S.size();
+				Setcache[temp.address].S[k]=l;
 			}
 		}
+
 		double miss_rate = (miss / (miss + hit));
 		double hit_rate = (hit / (miss + hit));
 		double miss_penalty = 100;
@@ -161,11 +176,17 @@ void Set_Full(vector<block>Memory, vector<Set>& Setcache, double CC, int numset)
 		cout << "Miss Penalty: " << miss_penalty << endl;
 		cout << "AMAT Value: " << AMAT << endl << endl;
 		cout << "(VB)\t(Tag)\t\t\t\t(Data)" << endl;
-		/*for (int j = 0; j < Cache.size(); j++)
+		for (int j = 0; j < Setcache.size(); j++)
 		{
-			line c = Cache[j];
-			cout << c.valid_bit << "\t" << c.tag << "\t" << c.data << endl;
-		}*/
+			if (Setcache[j].size!=1)
+				cout << "Set" << j<<endl;
+			for (int k = 0; k < Setcache[j].S.size() ; k++)
+			{
+				line c = Setcache[j].S[k];
+				cout << c.valid_bit << "\t" << c.tag << "\t" << c.data << endl;
+			}
+
+		}
 		cout << "-----------------------------------------------------------------------------------------------------------------------" << endl;
 	}
 }
@@ -177,7 +198,7 @@ int main()
 	vector<block>Memory;
 	vector<line> Cache;
 	vector <Set> Setcache;
-	int S, L, M;
+	int S, L, M=1;
 	double CC;
 	int choice, offset, index, tag;
 	cout << "The American University in Cairo" << endl << "Assembly Language - Memory Hierarchy Simulator" << endl << "Mariam Abdelaziz 900196082" << endl << "Salma Abdelhalim 900193718" << endl << "Abdelhalim Ali 900193539" << endl;
@@ -228,7 +249,7 @@ int main()
 
 	Setcache.resize(M);
 	for (int i = 0; i < Setcache.size(); i++)
-		Setcache.at(i).size = C / M;
+		Setcache[i].size = C / M;
 
 	//cout << tag;
 	Memory = read_mem(file_name, Memory, offset, index, tag, M, choice);
